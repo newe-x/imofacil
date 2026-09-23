@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Assinar contrato</h1>
+</div>
+
+<div class="form-card">
+    <p class="field-label">Imóvel</p>
+    <p>{{ contrato.imovel.nome }} — {{ contrato.imovel.endereco }}, {{ contrato.imovel.bairro }},
+        {{ contrato.imovel.cidade }}/{{ contrato.imovel.estado }}</p>
+
+    <p class="field-label" style="margin-top: 1rem">Locatário</p>
+    <p>{{ contrato.nome_locatario }} — CPF {{ contrato.cpf_locatario }}</p>
+
+    <p class="field-label" style="margin-top: 1rem">Termos</p>
+    <p>{{ contrato.duracao_contrato }}, de {{ contrato.data_inicio.strftime("%d/%m/%Y") }} a
+        {{ contrato.data_termino.strftime("%d/%m/%Y") }} — {{ contrato.valor }}
+        ({{ contrato.forma_pagamento }})</p>
+
+    {% if error %}
+    <p class="form-error" style="margin-top: 1rem">{{ error }}</p>
+    {% endif %}
+
+    <form action="{{ url_for('assinar_contrato', contrato_id=contrato.id) }}" method="POST" style="margin-top: 1.5rem">
+        <div class="input-box">
+            <input type="text" name="nome" placeholder="Seu nome completo" required>
+        </div>
+        <div class="checkbox">
+            <input type="checkbox" id="confirma" required>
+            <label for="confirma">Li o contrato acima e confirmo minha assinatura eletrônica.</label>
+        </div>
+        <div class="button">
+            <input type="submit" value="Assinar contrato">
+        </div>
+    </form>
+</div>
+{% endblock %}

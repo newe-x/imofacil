@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="{{ url_for('editar_imovel', imovel_id=imovel.id) if imovel else url_for('novo_imovel') }}"
+    method="POST" class="form-card">
+    <h1>{{ "Editar imóvel" if imovel else "Novo imóvel" }}</h1>
+    {% if error %}<p class="form-error">{{ error }}</p>{% endif %}
+
+    <div class="input-box">
+        <input type="text" name="nome" placeholder="Apelido do imóvel (ex: Casa da Praia)"
+            value="{{ dados.nome if dados else (imovel.nome if imovel else '') }}" required>
+    </div>
+    <div class="input-box">
+        <input type="text" name="endereco" placeholder="Endereço"
+            value="{{ dados.endereco if dados else (imovel.endereco if imovel else '') }}" required>
+    </div>
+    <div class="input-box">
+        <input type="text" name="bairro" placeholder="Bairro"
+            value="{{ dados.bairro if dados else (imovel.bairro if imovel else '') }}" required>
+    </div>
+    <div class="input-box">
+        <input type="text" name="cidade" placeholder="Cidade"
+            value="{{ dados.cidade if dados else (imovel.cidade if imovel else '') }}" required>
+    </div>
+    <div class="input-box">
+        <input type="text" name="estado" placeholder="UF" maxlength="2"
+            value="{{ dados.estado if dados else (imovel.estado if imovel else '') }}" required>
+    </div>
+    <div class="input-box">
+        <input type="text" name="cep" placeholder="CEP"
+            value="{{ dados.cep if dados else (imovel.cep if imovel else '') }}" required>
+    </div>
+
+    <div class="button">
+        <input type="submit" value="{{ 'Salvar alterações' if imovel else 'Cadastrar imóvel' }}">
+    </div>
+</form>
+{% endblock %}

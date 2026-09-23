@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Painel</h1>
+<p>Resumo dos seus imóveis e contratos.</p>
+
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <span class="kpi-value">{{ total_imoveis }}</span>
+        <span class="kpi-label">Casas cadastradas</span>
+    </div>
+    <div class="kpi-card">
+        <span class="kpi-value">{{ alocacoes_realizadas }}</span>
+        <span class="kpi-label">Aluguéis fechados</span>
+    </div>
+    <div class="kpi-card">
+        <span class="kpi-value">{{ alocacoes_ativas }}</span>
+        <span class="kpi-label">Aluguéis ativos</span>
+    </div>
+    <div class="kpi-card">
+        <span class="kpi-value">{{ proximos_30_dias }}</span>
+        <span class="kpi-label">Começam nos próximos 30 dias</span>
+    </div>
+</div>
+{% endblock %}

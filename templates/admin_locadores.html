@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Locadores</h1>
+    <a href="{{ url_for('admin_novo_locador') }}" class="button-link">Novo locador</a>
+</div>
+
+{% if locadores %}
+<div class="table-scroll">
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Usuário</th>
+            <th>Imóveis</th>
+            <th>Acesso</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for locador in locadores %}
+        <tr>
+            <td>{{ locador.username }}</td>
+            <td>{{ locador.imoveis|length }}</td>
+            <td>
+                <span class="status-badge {{ 'status-preenchido' if locador.ativo else 'status-cancelado' }}">
+                    {{ "Ativo" if locador.ativo else "Desativado" }}
+                </span>
+            </td>
+            <td>
+                <form action="{{ url_for('admin_alternar_acesso', locador_id=locador.id) }}" method="POST">
+                    <button type="submit" class="link-action">
+                        {{ "Desativar" if locador.ativo else "Ativar" }}
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p>Nenhum locador cadastrado ainda.</p>
+{% endif %}
+{% endblock %}

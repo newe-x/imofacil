@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Imofácil - Sua solução imobiliária">
+    <meta name="keywords" content="imobiliária, imóveis, compra, venda, aluguel">
+    <meta name="author" content="Imofácil">
+    <link rel="icon" href="{{ url_for('static', filename='assets/logo.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <title>Imofácil</title>
+</head>
+
+<body>
+    <header class="header">
+        <section>
+            <a href="{{ url_for('admin_locadores') if current_user.role == 'admin' else url_for('dashboard') }}" class="logo">
+                <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Imofácil" class="logo-image">
+            </a>
+            <nav class="navbar">
+                {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('admin_locadores') }}">Locadores</a>
+                <a href="{{ url_for('admin_tentativas') }}">Tentativas de login</a>
+                {% else %}
+                <a href="{{ url_for('dashboard') }}">Painel</a>
+                <a href="{{ url_for('imoveis') }}">Imóveis</a>
+                <a href="{{ url_for('novo_contrato') }}">Novo contrato</a>
+                <a href="{{ url_for('contratos') }}">Contratos</a>
+                <a href="{{ url_for('calendario') }}">Calendário</a>
+                {% endif %}
+                <a href="#" id="logoutLink">Sair</a>
+            </nav>
+        </section>
+    </header>
+    <main class="container container-wide">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+
+</html>

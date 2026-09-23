@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Contratos</h1>
+    <a href="{{ url_for('novo_contrato') }}" class="button-link">Novo contrato</a>
+</div>
+
+{% if contratos %}
+<div class="table-scroll">
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Imóvel</th>
+            <th>Status</th>
+            <th>Início</th>
+            <th>Término</th>
+            <th>Link</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for contrato in contratos %}
+        <tr>
+            <td>{{ contrato.imovel.nome }}</td>
+            <td>
+                {% if contrato.status == "assinado" %}
+                <span class="status-badge status-preenchido">Assinado</span>
+                {% elif contrato.status == "preenchido" %}
+                <span class="status-badge status-pendente">Aguardando assinatura</span>
+                {% elif contrato.status == "cancelado" %}
+                <span class="status-badge status-cancelado">Cancelado</span>
+                {% elif contrato.link_expirado %}
+                <span class="status-badge status-expirado">Link expirado</span>
+                {% else %}
+                <span class="status-badge status-pendente">Pendente</span>
+                {% endif %}
+            </td>
+            <td>{{ contrato.data_inicio.strftime("%d/%m/%Y") }}</td>
+            <td>{{ contrato.data_termino.strftime("%d/%m/%Y") }}</td>
+            <td>
+                {% if contrato.status in ("preenchido", "assinado") %}
+                <a href="{{ url_for('download_contrato', token=contrato.token) }}" target="_blank">Baixar contrato</a>
+                {% elif contrato.status == "cancelado" %}
+                <span>—</span>
+                {% else %}
+                <a href="{{ url_for('contrato_publico', token=contrato.token, _external=True) }}">
+                    {{ url_for('contrato_publico', token=contrato.token, _external=True) }}
+                </a>
+                {% endif %}
+            </td>
+            <td>
+                {% if contrato.status == "pendente" %}
+                <form action="{{ url_for('reenviar_contrato', contrato_id=contrato.id) }}" method="POST"
+                    style="display:inline">
+                    <button type="submit" class="link-action">Reenviar</button>
+                </form>
+                <form action="{{ url_for('cancelar_contrato', contrato_id=contrato.id) }}" method="POST"
+                    style="display:inline" onsubmit="return confirm('Cancelar este contrato pendente?')">
+                    <button type="submit" class="link-action link-action-danger">Cancelar</button>
+                </form>
+                {% elif contrato.status == "preenchido" %}
+                <a href="{{ url_for('assinar_contrato', contrato_id=contrato.id) }}" class="link-action">Assinar</a>
+                {% else %}
+                <span>—</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p>Nenhum contrato gerado ainda.</p>
+{% endif %}
+{% endblock %}

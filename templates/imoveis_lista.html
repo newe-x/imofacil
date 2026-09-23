@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Imóveis</h1>
+    <a href="{{ url_for('novo_imovel') }}" class="button-link">Novo imóvel</a>
+</div>
+
+{% if erro %}<p class="form-error">{{ erro }}</p>{% endif %}
+
+{% if imoveis %}
+<div class="table-scroll">
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Endereço</th>
+            <th>Bairro</th>
+            <th>Cidade/UF</th>
+            <th>CEP</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for imovel in imoveis %}
+        <tr>
+            <td>{{ imovel.nome }}</td>
+            <td>{{ imovel.endereco }}</td>
+            <td>{{ imovel.bairro }}</td>
+            <td>{{ imovel.cidade }}/{{ imovel.estado }}</td>
+            <td>{{ imovel.cep }}</td>
+            <td>
+                <a href="{{ url_for('editar_imovel', imovel_id=imovel.id) }}" class="link-action">Editar</a>
+                <form action="{{ url_for('excluir_imovel', imovel_id=imovel.id) }}" method="POST"
+                    style="display:inline" onsubmit="return confirm('Excluir este imóvel?')">
+                    <button type="submit" class="link-action link-action-danger">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p>Nenhum imóvel cadastrado ainda.</p>
+{% endif %}
+{% endblock %}

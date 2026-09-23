@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Tentativas de login malsucedidas</h1>
+</div>
+
+{% if tentativas %}
+<div class="table-scroll">
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Usuário</th>
+            <th>IP</th>
+            <th>Quando</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tentativa in tentativas %}
+        <tr>
+            <td>{{ tentativa.username }}</td>
+            <td>{{ tentativa.ip }}</td>
+            <td>{{ tentativa.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p>Nenhuma tentativa malsucedida registrada.</p>
+{% endif %}
+{% endblock %}

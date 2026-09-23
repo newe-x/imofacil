@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="{{ url_for('novo_contrato') }}" method="POST" class="form-card">
+    <h1>Gerar contrato</h1>
+    <p>Escolha o imóvel e preencha os dados do contrato. Ao enviar, um link exclusivo
+        será criado para o inquilino preencher as informações dele.</p>
+
+    {% if error %}<p class="form-error">{{ error }}</p>{% endif %}
+
+    {% if imoveis %}
+    <div class="input-box">
+        <select name="imovel_id" required>
+            <option value="" disabled selected>Selecione o imóvel</option>
+            {% for imovel in imoveis %}
+            <option value="{{ imovel.id }}">{{ imovel.nome }} — {{ imovel.endereco }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="section-title">Dados do contrato</div>
+    <div class="input-box">
+        <input type="text" name="duracao_contrato" placeholder="Duração (ex: 12 meses)" required>
+    </div>
+    <div class="input-box">
+        <label class="field-label">Data de início</label>
+        <input type="date" name="data_inicio" required>
+    </div>
+    <div class="input-box">
+        <label class="field-label">Data de término</label>
+        <input type="date" name="data_termino" required>
+    </div>
+    <div class="input-box">
+        <input type="text" name="valor" placeholder="Valor (ex: R$ 1.500,00)" required>
+    </div>
+    <div class="input-box">
+        <input type="text" name="forma_pagamento" placeholder="Forma de pagamento" required>
+    </div>
+
+    <div class="button">
+        <input type="submit" value="Gerar link do contrato">
+    </div>
+    {% else %}
+    <p>Cadastre um imóvel antes de gerar um contrato.
+        <a href="{{ url_for('novo_imovel') }}">Cadastrar imóvel</a>
+    </p>
+    {% endif %}
+</form>
+
+{% if link %}
+<div class="form-card link-result">
+    <p>Link gerado com sucesso! Encaminhe para o inquilino:</p>
+    <p class="generated-link"><a href="{{ link }}" target="_blank">{{ link }}</a></p>
+</div>
+{% endif %}
+{% endblock %}
