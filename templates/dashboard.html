@@ -1,25 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Painel</h1>
-<p>Resumo dos seus imóveis e contratos.</p>
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-speedometer2"></i>Painel</h1>
+        <p>Resumo dos seus imóveis e contratos.</p>
+    </div>
+    <div class="dashboard-actions">
+        <a href="{{ url_for('novo_imovel') }}" class="button-link"><i class="bi bi-plus-lg"></i>Novo imóvel</a>
+        <a href="{{ url_for('novo_contrato') }}" class="button-link"><i class="bi bi-plus-lg"></i>Novo contrato</a>
+    </div>
+</div>
 
 <div class="kpi-grid">
-    <div class="kpi-card">
+    <a href="{{ url_for('imoveis') }}" class="kpi-card">
         <span class="kpi-value">{{ total_imoveis }}</span>
-        <span class="kpi-label">Casas cadastradas</span>
-    </div>
-    <div class="kpi-card">
+        <span class="kpi-label"><i class="bi bi-house-door-fill"></i>Casas cadastradas</span>
+    </a>
+    <a href="{{ url_for('contratos') }}" class="kpi-card">
         <span class="kpi-value">{{ alocacoes_realizadas }}</span>
-        <span class="kpi-label">Aluguéis fechados</span>
-    </div>
-    <div class="kpi-card">
+        <span class="kpi-label"><i class="bi bi-check-circle-fill"></i>Aluguéis fechados</span>
+    </a>
+    <a href="{{ url_for('contratos') }}" class="kpi-card">
         <span class="kpi-value">{{ alocacoes_ativas }}</span>
-        <span class="kpi-label">Aluguéis ativos</span>
-    </div>
-    <div class="kpi-card">
+        <span class="kpi-label"><i class="bi bi-key-fill"></i>Aluguéis ativos</span>
+    </a>
+    <a href="{{ url_for('contratos') }}" class="kpi-card">
         <span class="kpi-value">{{ proximos_30_dias }}</span>
-        <span class="kpi-label">Começam nos próximos 30 dias</span>
-    </div>
+        <span class="kpi-label"><i class="bi bi-hourglass-split"></i>Começam nos próximos 30 dias</span>
+    </a>
 </div>
 {% endblock %}

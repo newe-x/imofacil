@@ -23,7 +23,12 @@
         </section>
     </header>
     <main class="container">
-        {% if estado == "preenchido" %}
+        {% if estado == "assinado" %}
+        <div class="form-card">
+            <h1>Contrato já assinado</h1>
+            <p>Este contrato já foi assinado pelo locador e não pode mais ser alterado.</p>
+        </div>
+        {% elif estado == "preenchido" %}
         <div class="form-card">
             <h1>Link já utilizado</h1>
             <p>Este link já foi usado. Se precisar de uma nova via do contrato,
@@ -50,12 +55,12 @@
                 <input type="text" name="nome_locatario" placeholder="Nome completo" required><i class="bi bi-person-fill"></i>
             </div>
             <div class="input-box">
-                <input type="text" name="rg_locatario" placeholder="RG" required maxlength="9" pattern="\d{9}"
-                    title="Digite um RG válido com 9 dígitos"><i class="bi bi-card-text"></i>
+                <input type="text" name="rg_locatario" placeholder="RG" required maxlength="12" pattern="\d{2}\.\d{3}\.\d{3}-\d"
+                    title="Digite um RG válido no formato XX.XXX.XXX-X"><i class="bi bi-card-text"></i>
             </div>
             <div class="input-box">
-                <input type="text" name="cpf_locatario" placeholder="CPF" required maxlength="11" pattern="\d{11}"
-                    title="Digite um CPF válido com 11 dígitos"><i class="bi bi-credit-card-2-front-fill"></i>
+                <input type="text" name="cpf_locatario" placeholder="CPF" required maxlength="14" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}"
+                    title="Digite um CPF válido no formato XXX.XXX.XXX-XX"><i class="bi bi-credit-card-2-front-fill"></i>
             </div>
             <div class="input-box">
                 <input type="email" name="email_locatario" placeholder="Email" required><i class="bi bi-envelope-fill"></i>

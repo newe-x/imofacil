@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ "Bem-vindo(a) à Imofácil" if primeiro_acesso else "Meu perfil" }}</h1>
+</div>
+
+<div class="form-card">
+    {% if primeiro_acesso %}
+    <p class="form-subtitle">Antes de continuar, conte um pouco sobre você. Leva menos de um minuto.</p>
+    {% endif %}
+    {% if error %}
+    <p class="form-error">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <p class="section-title" style="margin-top: 0">Dados pessoais</p>
+
+        <div class="input-box">
+            <input type="text" name="nome" placeholder="Nome completo" required
+                value="{{ dados.nome if dados else current_user.nome or '' }}">
+        </div>
+        <div class="input-box">
+            <input type="text" name="rg" placeholder="RG" required
+                value="{{ dados.rg if dados else current_user.rg or '' }}">
+        </div>
+        <div class="input-box">
+            <input type="text" name="cpf" placeholder="CPF" required
+                value="{{ dados.cpf if dados else current_user.cpf or '' }}">
+        </div>
+        <div class="input-box">
+            <input type="email" name="email" placeholder="Email" required
+                value="{{ dados.email if dados else current_user.email or '' }}">
+        </div>
+        <div class="input-box">
+            <input type="tel" name="telefone" placeholder="Telefone" required
+                value="{{ dados.telefone if dados else current_user.telefone or '' }}">
+        </div>
+        <div class="input-box">
+            <input type="text" name="endereco" placeholder="Endereço" required
+                value="{{ dados.endereco if dados else current_user.endereco or '' }}">
+        </div>
+        <div class="input-box">
+            <input type="text" name="nacionalidade" placeholder="Nacionalidade" required
+                value="{{ dados.nacionalidade if dados else current_user.nacionalidade or '' }}">
+        </div>
+        <div class="input-box">
+            <input type="text" name="estado_civil" placeholder="Estado Civil" required
+                value="{{ dados.estado_civil if dados else current_user.estado_civil or '' }}">
+        </div>
+        <div class="input-box">
+            <input type="text" name="profissao" placeholder="Profissão" required
+                value="{{ dados.profissao if dados else current_user.profissao or '' }}">
+        </div>
+
+        {% if not primeiro_acesso %}
+        <p class="section-title">Alterar senha (opcional)</p>
+        <div class="input-box">
+            <input type="password" name="nova_senha" placeholder="Nova senha" minlength="6"><i class="bi bi-eye-fill toggle-password"></i>
+        </div>
+        {% endif %}
+
+        <div class="button">
+            <input type="submit" value="{{ 'Continuar' if primeiro_acesso else 'Salvar' }}">
+        </div>
+    </form>
+</div>
+{% endblock %}

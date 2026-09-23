@@ -18,6 +18,19 @@ class Locador(UserMixin, db.Model):
     role = db.Column(db.String(20), nullable=False, default="locador")
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
+    # Dados pessoais, usados no parágrafo "LOCADOR:" do contrato gerado.
+    # Só são obrigatórios pra quem tem role "locador" (ver perfil_completo).
+    nome = db.Column(db.String(200))
+    rg = db.Column(db.String(20))
+    cpf = db.Column(db.String(20))
+    email = db.Column(db.String(200))
+    telefone = db.Column(db.String(30))
+    endereco = db.Column(db.String(255))
+    nacionalidade = db.Column(db.String(80))
+    estado_civil = db.Column(db.String(50))
+    profissao = db.Column(db.String(120))
+    perfil_completo = db.Column(db.Boolean, nullable=False, default=False)
+
     imoveis = db.relationship("Imovel", backref="locador", lazy=True)
 
 

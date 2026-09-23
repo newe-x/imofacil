@@ -192,6 +192,20 @@ body {
     pointer-events: none;
 }
 
+.input-box i.toggle-password {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+h1 i.bi,
+.navbar a i.bi,
+.button-link i.bi,
+.button button i.bi,
+.kpi-label i.bi,
+.link-action i.bi {
+    margin-right: 0.4rem;
+}
+
 .checkbox {
     display: flex;
     align-items: center;
@@ -212,7 +226,8 @@ body {
     cursor: pointer;
 }
 
-.button input {
+.button input,
+.button button {
     width: 100%;
     height: 50px;
     background: linear-gradient(135deg, var(--main-color), var(--secondary-color));
@@ -224,7 +239,8 @@ body {
     cursor: pointer;
 }
 
-.button input:hover {
+.button input:hover,
+.button button:hover {
     filter: brightness(1.08);
     box-shadow: 0 6px 18px rgba(30, 89, 138, 0.3);
 }
@@ -317,7 +333,8 @@ body {
 .page-header {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
     gap: 1.25rem;
     margin-bottom: 2rem;
 }
@@ -336,16 +353,30 @@ body {
 .button-link {
     display: inline-block;
     padding: 0.8rem 1.6rem;
-    background-color: var(--main-color);
+    background: linear-gradient(135deg, var(--main-color), var(--secondary-color));
     color: #fff;
     font-weight: 600;
     border-radius: 8px;
     box-shadow: 0 6px 16px rgba(102, 187, 70, 0.35);
 }
 
+.empty-state {
+    text-align: center;
+}
+
+.empty-state > .button-link {
+    margin-top: 1rem;
+}
+
 .button-link:hover {
     filter: brightness(1.08);
     box-shadow: 0 8px 20px rgba(102, 187, 70, 0.45);
+}
+
+.dashboard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
 }
 
 .form-card {
@@ -366,6 +397,12 @@ body {
     margin-bottom: 1rem;
 }
 
+.form-subtitle {
+    color: var(--font-color);
+    opacity: 0.75;
+    margin-bottom: 1.5rem;
+}
+
 .field-label {
     display: block;
     font-size: 0.85rem;
@@ -381,6 +418,54 @@ body {
     word-break: break-all;
 }
 
+.copy-link-btn {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding: 0.6rem 1.2rem;
+    background: linear-gradient(135deg, var(--main-color), var(--secondary-color));
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.copy-link-btn:hover {
+    filter: brightness(1.08);
+}
+
+.copy-link-btn-sm {
+    margin-top: 0;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+}
+
+.copy-link-btn i {
+    margin-right: 0.4rem;
+}
+
+.copy-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 2rem;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--font-color);
+    color: #fff;
+    padding: 0.8rem 1.4rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    z-index: 300;
+    transition: opacity 0.2s ease;
+}
+
+.copy-toast i {
+    color: var(--main-color);
+}
+
 .kpi-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -389,11 +474,17 @@ body {
 }
 
 .kpi-card {
+    display: block;
     background-color: #fff;
     border-radius: 16px;
     padding: 1.25rem 1rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     text-align: center;
+    color: inherit;
+}
+
+.kpi-card:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
 }
 
 .kpi-value {
@@ -633,6 +724,7 @@ body {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
+        text-align: left;
     }
 
     .form-card {

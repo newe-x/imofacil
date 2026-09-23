@@ -3,7 +3,7 @@
 {% block content %}
 <form action="{{ url_for('editar_imovel', imovel_id=imovel.id) if imovel else url_for('novo_imovel') }}"
     method="POST" class="form-card">
-    <h1>{{ "Editar imóvel" if imovel else "Novo imóvel" }}</h1>
+    <h1><i class="bi bi-{{ 'pencil-fill' if imovel else 'house-add-fill' }}"></i>{{ "Editar imóvel" if imovel else "Novo imóvel" }}</h1>
     {% if error %}<p class="form-error">{{ error }}</p>{% endif %}
 
     <div class="input-box">
@@ -32,7 +32,7 @@
     </div>
 
     <div class="button">
-        <input type="submit" value="{{ 'Salvar alterações' if imovel else 'Cadastrar imóvel' }}">
+        <button type="submit"><i class="bi bi-{{ 'check-lg' if imovel else 'check-circle-fill' }}"></i>{{ 'Salvar alterações' if imovel else 'Cadastrar imóvel' }}</button>
     </div>
 </form>
 {% endblock %}

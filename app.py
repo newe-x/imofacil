@@ -33,8 +33,9 @@ CONTRATOS_GERADOS_DIR = f"{CONTRATOS_DIR}/gerados"
 TEMPLATE_PATH = f"{CONTRATOS_DIR}/Contrato_de_Locacao_Residencial.docx"
 
 # Mapeia o nome do campo usado internamente para o placeholder real dentro
-# do template .docx (alguns usam acentos, outros não). Campos pessoais do
-# locador e de foro/assinatura ficam fora por ora (ver plano).
+# do template .docx (alguns usam acentos, outros não). Campos de foro/data
+# de assinatura ({{cidade_locador}}/{{uf_locador}} como comarca,
+# {{dia_assinatura}}/{{mes}}/{{ano}}) ficam fora por ora.
 FIELD_MAP = {
     # Locatário
     "nome_locatario": "nome_locatario",
@@ -46,6 +47,16 @@ FIELD_MAP = {
     "nacionalidade_locatario": "nacionalidade_locatario",
     "estado_locatario": "estado_locatario",
     "profissao_locatario": "profissão_locatario",
+    # Locador
+    "nome_locador": "nome_locador",
+    "rg_locador": "rg_locador",
+    "cpf_locador": "cpf_locador",
+    "email_locador": "email_locador",
+    "telefone_locador": "telefone_locador",
+    "endereco_locador": "endereço_locador",
+    "nacionalidade_locador": "nacionalidade_locador",
+    "estado_locador": "estado_locador",
+    "profissao_locador": "profissão_locador",
     # Imóvel
     "endereco_imovel": "endereco_imovel",
     "bairro_imovel": "bairro_imovel",
@@ -72,6 +83,18 @@ LOCATARIO_FIELDS = [
     "profissao_locatario",
 ]
 
+PERFIL_FIELDS = [
+    "nome",
+    "rg",
+    "cpf",
+    "email",
+    "telefone",
+    "endereco",
+    "nacionalidade",
+    "estado_civil",
+    "profissao",
+]
+
 # Proteção contra força bruta no login: bloqueia por usuário (protege a conta)
 # e por IP (protege o servidor de tentar muitos usuários de uma vez).
 LOGIN_MAX_TENTATIVAS_USUARIO = 5
@@ -93,6 +116,8 @@ def locador_required(view):
         if not current_user.ativo:
             logout_user()
             abort(403)
+        if not current_user.perfil_completo and request.endpoint != "perfil":
+            return redirect(url_for("perfil"))
         return view(*args, **kwargs)
 
     return wrapped
@@ -181,6 +206,42 @@ def login():
 def logout():
     logout_user()
     return jsonify({"result": "Logout realizado com sucesso!"})
+
+
+@app.route("/perfil", methods=["GET", "POST"])
+@login_required
+def perfil():
+    if request.method == "GET":
+        return render_template("perfil.html", primeiro_acesso=not current_user.perfil_completo)
+
+    dados = {campo: request.form.get(campo, "").strip() for campo in PERFIL_FIELDS}
+    missing = [campo for campo, valor in dados.items() if not valor]
+    if missing:
+        return render_template(
+            "perfil.html",
+            primeiro_acesso=not current_user.perfil_completo,
+            dados=dados,
+            error="Preencha todos os campos.",
+        ), 400
+
+    nova_senha = request.form.get("nova_senha", "")
+    if nova_senha and len(nova_senha) < 6:
+        return render_template(
+            "perfil.html",
+            primeiro_acesso=not current_user.perfil_completo,
+            dados=dados,
+            error="A nova senha precisa ter pelo menos 6 caracteres.",
+        ), 400
+
+    for campo, valor in dados.items():
+        setattr(current_user, campo, valor)
+    if nova_senha:
+        current_user.password_hash = generate_password_hash(nova_senha)
+    current_user.perfil_completo = True
+    db.session.commit()
+
+    destino = "admin_locadores" if current_user.role == "admin" else "dashboard"
+    return redirect(url_for(destino))
 
 
 @app.route("/dashboard")
@@ -486,7 +547,9 @@ def contrato_publico(token):
     if not contrato:
         abort(404)
 
-    if contrato.status == "preenchido":
+    if contrato.status == "assinado":
+        estado = "assinado"
+    elif contrato.status == "preenchido":
         estado = "preenchido"
     elif contrato.status == "cancelado":
         estado = "cancelado"
@@ -503,6 +566,8 @@ def enviar_contrato(token):
     contrato = Contrato.query.filter_by(token=token).first()
     if not contrato:
         abort(404)
+    if contrato.status == "assinado":
+        return jsonify({"error": "Este contrato já foi assinado e não pode mais ser alterado."}), 400
     if contrato.status == "preenchido":
         return jsonify({"error": "Este link já foi utilizado."}), 400
     if contrato.status == "cancelado":
@@ -629,8 +694,18 @@ def anexar_bloco_assinaturas(contrato):
 
 def gerarContratos(contrato, dados_locatario):
     imovel = contrato.imovel
+    locador = imovel.locador
 
     dados = dict(dados_locatario)
+    dados["nome_locador"] = locador.nome
+    dados["rg_locador"] = locador.rg
+    dados["cpf_locador"] = locador.cpf
+    dados["email_locador"] = locador.email
+    dados["telefone_locador"] = locador.telefone
+    dados["endereco_locador"] = locador.endereco
+    dados["nacionalidade_locador"] = locador.nacionalidade
+    dados["estado_locador"] = locador.estado_civil
+    dados["profissao_locador"] = locador.profissao
     dados["endereco_imovel"] = imovel.endereco
     dados["bairro_imovel"] = imovel.bairro
     dados["cidade_imovel"] = imovel.cidade
@@ -647,7 +722,7 @@ def gerarContratos(contrato, dados_locatario):
         for field, value in dados.items():
             placeholder = "{{" + FIELD_MAP[field] + "}}"
             if placeholder in paragraph.text:
-                paragraph.text = paragraph.text.replace(placeholder, value)
+                paragraph.text = paragraph.text.replace(placeholder, value or "")
 
     os.makedirs(CONTRATOS_GERADOS_DIR, exist_ok=True)
     doc.save(f"{CONTRATOS_GERADOS_DIR}/{contrato.token}.docx")

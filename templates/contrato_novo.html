@@ -41,9 +41,10 @@
         <input type="submit" value="Gerar link do contrato">
     </div>
     {% else %}
-    <p>Cadastre um imóvel antes de gerar um contrato.
-        <a href="{{ url_for('novo_imovel') }}">Cadastrar imóvel</a>
-    </p>
+    <div class="empty-state">
+        <p>Cadastre um imóvel antes de gerar um contrato.</p>
+        <a href="{{ url_for('novo_imovel') }}" class="button-link">Cadastrar imóvel</a>
+    </div>
     {% endif %}
 </form>
 
@@ -51,6 +52,9 @@
 <div class="form-card link-result">
     <p>Link gerado com sucesso! Encaminhe para o inquilino:</p>
     <p class="generated-link"><a href="{{ link }}" target="_blank">{{ link }}</a></p>
+    <button type="button" class="copy-link-btn" data-copy="{{ link }}"><i class="bi bi-clipboard"></i>Copiar link</button>
 </div>
 {% endif %}
+
+<div id="copyToast" class="copy-toast hidden"><i class="bi bi-check-circle-fill"></i>Link copiado!</div>
 {% endblock %}

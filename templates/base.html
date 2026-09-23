@@ -22,16 +22,13 @@
             </a>
             <nav class="navbar">
                 {% if current_user.role == 'admin' %}
-                <a href="{{ url_for('admin_locadores') }}">Locadores</a>
-                <a href="{{ url_for('admin_tentativas') }}">Tentativas de login</a>
+                <a href="{{ url_for('admin_locadores') }}"><i class="bi bi-people-fill"></i>Locadores</a>
+                <a href="{{ url_for('admin_tentativas') }}"><i class="bi bi-shield-exclamation"></i>Tentativas de login</a>
                 {% else %}
-                <a href="{{ url_for('dashboard') }}">Painel</a>
-                <a href="{{ url_for('imoveis') }}">Imóveis</a>
-                <a href="{{ url_for('novo_contrato') }}">Novo contrato</a>
-                <a href="{{ url_for('contratos') }}">Contratos</a>
-                <a href="{{ url_for('calendario') }}">Calendário</a>
+                <a href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2"></i>Painel</a>
+                <a href="{{ url_for('calendario') }}"><i class="bi bi-calendar3"></i>Calendário</a>
                 {% endif %}
-                <a href="#" id="logoutLink">Sair</a>
+                <a href="{{ url_for('perfil') }}"><i class="bi bi-gear-fill"></i>Meu perfil</a>
             </nav>
         </section>
     </header>
