@@ -2,77 +2,92 @@
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="bi bi-file-earmark-text-fill"></i>Contratos</h1>
+    <div>
+        <h1><i class="bi bi-file-earmark-text-fill"></i>Contratos</h1>
+        <p class="page-descricao">Acompanhe cada contrato, do envio do link até a assinatura.</p>
+    </div>
     <a href="{{ url_for('novo_contrato') }}" class="button-link"><i class="bi bi-plus-lg"></i>Novo contrato</a>
 </div>
 
+<nav class="filtro-chips" aria-label="Filtrar contratos">
+    {% for status, rotulo in filtros %}
+    <a href="{{ url_for('contratos', status=status) if status else url_for('contratos') }}"
+        class="filtro-chip{% if status == filtro %} ativo{% endif %}{% if status == 'preenchido' and contagem[status] %} filtro-chip-alerta{% endif %}">
+        {{ rotulo }} <span>{{ contagem[status] }}</span>
+    </a>
+    {% endfor %}
+</nav>
+
 {% if contratos %}
-<div class="table-scroll">
-<table class="data-table">
-    <thead>
-        <tr>
-            <th>Imóvel</th>
-            <th>Status</th>
-            <th>Início</th>
-            <th>Término</th>
-            <th>Link</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for contrato in contratos %}
-        <tr>
-            <td>{{ contrato.imovel.nome }}</td>
-            <td>
-                {% if contrato.status == "assinado" %}
-                <span class="status-badge status-preenchido">Assinado</span>
-                {% elif contrato.status == "preenchido" %}
-                <span class="status-badge status-pendente">Aguardando assinatura</span>
-                {% elif contrato.status == "cancelado" %}
-                <span class="status-badge status-cancelado">Cancelado</span>
-                {% elif contrato.link_expirado %}
-                <span class="status-badge status-expirado">Link expirado</span>
-                {% else %}
-                <span class="status-badge status-pendente">Pendente</span>
-                {% endif %}
-            </td>
-            <td>{{ contrato.data_inicio.strftime("%d/%m/%Y") }}</td>
-            <td>{{ contrato.data_termino.strftime("%d/%m/%Y") }}</td>
-            <td>
-                {% if contrato.status in ("preenchido", "assinado") %}
-                <a href="{{ url_for('download_contrato', token=contrato.token) }}" target="_blank"><i class="bi bi-download"></i>Baixar contrato</a>
-                {% elif contrato.status == "cancelado" %}
-                <span>—</span>
-                {% else %}
-                <button type="button" class="copy-link-btn copy-link-btn-sm"
-                    data-copy="{{ url_for('contrato_publico', token=contrato.token, _external=True) }}">
-                    <i class="bi bi-clipboard"></i>Copiar link
-                </button>
-                {% endif %}
-            </td>
-            <td>
-                {% if contrato.status == "pendente" %}
-                <form action="{{ url_for('reenviar_contrato', contrato_id=contrato.id) }}" method="POST"
-                    style="display:inline">
-                    <button type="submit" class="link-action"><i class="bi bi-arrow-repeat"></i>Reenviar</button>
-                </form>
-                <form action="{{ url_for('cancelar_contrato', contrato_id=contrato.id) }}" method="POST"
-                    style="display:inline" onsubmit="return confirm('Cancelar este contrato pendente?')">
-                    <button type="submit" class="link-action link-action-danger"><i class="bi bi-x-circle-fill"></i>Cancelar</button>
-                </form>
-                {% elif contrato.status == "preenchido" %}
-                <a href="{{ url_for('assinar_contrato', contrato_id=contrato.id) }}" class="link-action"><i class="bi bi-pen-fill"></i>Assinar</a>
-                {% else %}
-                <span>—</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="contrato-cards">
+    {% for contrato in contratos %}
+    {% set expirado = contrato.link_expirado %}
+    <article class="contrato-card contrato-card-{{ 'expirado' if expirado else contrato.status }}">
+        <div class="contrato-card-topo">
+            <h2>{{ contrato.imovel.nome }}</h2>
+            {% if contrato.status == "assinado" %}
+            <span class="status-badge status-preenchido">Assinado</span>
+            {% elif contrato.status == "preenchido" %}
+            <span class="status-badge status-pendente">Falta sua assinatura</span>
+            {% elif contrato.status == "cancelado" %}
+            <span class="status-badge status-cancelado">Cancelado</span>
+            {% elif expirado %}
+            <span class="status-badge status-expirado">Link expirado</span>
+            {% else %}
+            <span class="status-badge status-pendente">Com o locatário</span>
+            {% endif %}
+        </div>
+
+        <ul class="contrato-card-info">
+            <li><i class="bi bi-person-fill"></i>{{ contrato.nome_locatario or ("Sem locatário" if contrato.status == "cancelado" else "Aguardando o locatário preencher") }}</li>
+            <li><i class="bi bi-calendar-range"></i>{{ contrato.data_inicio.strftime("%d/%m/%Y") }} a {{ contrato.data_termino.strftime("%d/%m/%Y") }}</li>
+            <li><i class="bi bi-cash-coin"></i>{{ contrato.valor_formatado }} · {{ contrato.forma_pagamento }}</li>
+        </ul>
+
+        {% if contrato.status != "cancelado" %}
+        <div class="contrato-card-acoes">
+            {% if contrato.status == "preenchido" %}
+            <a href="{{ url_for('assinar_contrato', contrato_id=contrato.id) }}" class="acao-principal"><i class="bi bi-pen-fill"></i>Assinar</a>
+            <a href="{{ url_for('visualizar_contrato', contrato_id=contrato.id) }}" class="link-action"><i class="bi bi-eye-fill"></i>Ver</a>
+            {% elif contrato.status == "assinado" %}
+            <a href="{{ url_for('visualizar_contrato', contrato_id=contrato.id) }}" class="acao-principal"><i class="bi bi-eye-fill"></i>Ver contrato</a>
+            <a href="{{ url_for('baixar_contrato_locador', contrato_id=contrato.id) }}" class="link-action"><i class="bi bi-file-earmark-pdf-fill"></i>Baixar PDF</a>
+            {% else %}
+            {% if expirado %}
+            <form action="{{ url_for('reenviar_contrato', contrato_id=contrato.id) }}" method="POST">
+                <button type="submit" class="acao-principal"><i class="bi bi-arrow-repeat"></i>Renovar link</button>
+            </form>
+            {% else %}
+            <button type="button" class="acao-principal copy-link-btn"
+                data-copy="{{ url_for('contrato_publico', token=contrato.token, _external=True) }}">
+                <i class="bi bi-clipboard"></i>Copiar link
+            </button>
+            <form action="{{ url_for('reenviar_contrato', contrato_id=contrato.id) }}" method="POST">
+                <button type="submit" class="link-action"><i class="bi bi-arrow-repeat"></i>Renovar</button>
+            </form>
+            {% endif %}
+            <form action="{{ url_for('cancelar_contrato', contrato_id=contrato.id) }}" method="POST"
+                data-confirmar="O link enviado ao locatário deixa de funcionar. Essa ação não pode ser desfeita."
+                data-confirmar-botao="Cancelar contrato">
+                <button type="submit" class="link-action link-action-danger"><i class="bi bi-x-circle"></i>Cancelar</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
+    </article>
+    {% endfor %}
 </div>
 {% else %}
-<p>Nenhum contrato gerado ainda.</p>
+<div class="lista-vazia">
+    <i class="bi bi-inbox"></i>
+    {% if filtro %}
+    <p>Nenhum contrato neste filtro.</p>
+    <a href="{{ url_for('contratos') }}" class="link-action">Ver todos</a>
+    {% else %}
+    <p>Você ainda não gerou nenhum contrato.</p>
+    <a href="{{ url_for('novo_contrato') }}" class="button-link"><i class="bi bi-plus-lg"></i>Gerar o primeiro</a>
+    {% endif %}
+</div>
 {% endif %}
 
 <div id="copyToast" class="copy-toast hidden"><i class="bi bi-check-circle-fill"></i>Link copiado!</div>

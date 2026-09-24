@@ -14,7 +14,7 @@
     <title>Imofácil</title>
 </head>
 
-<body>
+<body class="pagina-login">
     <header class="header">
         <section>
             <a href="#" class="logo">
@@ -25,16 +25,19 @@
     <main class="container">
         <form id="LoginForm" action="/login" method="POST">
             <h1>Login</h1>
+            <p class="page-descricao">Acesse para gerenciar seus imóveis e contratos.</p>
             <div class="input-box">
-                <input type="text" name="usuario" placeholder="usuario" required><i class="bi bi-person-fill"></i>
+                <input type="text" name="usuario" placeholder="Usuário" autocomplete="username"
+                    autocapitalize="none" autocorrect="off" spellcheck="false" required><i class="bi bi-person-fill"></i>
             </div>
             <div class="input-box">
-                <input type="password" name="senha" placeholder="senha" required><i class="bi bi-eye-fill toggle-password"></i>
+                <input type="password" name="senha" placeholder="Senha" autocomplete="current-password" required><i class="bi bi-eye-fill toggle-password"></i>
             </div>
             <div class="button">
                 <input type="submit" value="Entrar">
             </div>
             <p id="loginResult"></p>
+            <p class="login-ajuda">Esqueceu a senha? Fale com o administrador.</p>
         </form>
     </main>
 </body>

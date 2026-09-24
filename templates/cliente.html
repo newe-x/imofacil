@@ -40,6 +40,18 @@
             <p>Este contrato foi cancelado pelo locador. Entre em contato com ele
                 para mais informações.</p>
         </div>
+        {% elif estado == "download_erro" %}
+        <div class="form-card">
+            <h1>Não foi possível gerar o PDF</h1>
+            <p>Tente baixar novamente em alguns instantes. Se o problema continuar,
+                peça uma cópia ao locador.</p>
+        </div>
+        {% elif estado == "download_expirado" %}
+        <div class="form-card">
+            <h1>Download indisponível</h1>
+            <p>Por segurança, o contrato fica disponível para download por este link
+                apenas por 7 dias após a assinatura. Peça uma cópia ao locador.</p>
+        </div>
         {% elif estado == "expirado" %}
         <div class="form-card">
             <h1>Link expirado</h1>
@@ -141,7 +153,7 @@
             <i class="bi bi-check-circle-fill modal-icon"></i>
             <h2>Contrato gerado com sucesso!</h2>
             <p>Seu contrato foi criado. Clique no botão abaixo para ver o documento.</p>
-            <button type="button" id="viewContractBtn" class="modal-button">Visualizar contrato</button>
+            <button type="button" id="viewContractBtn" class="modal-button"><i class="bi bi-file-earmark-pdf-fill"></i> Baixar contrato em PDF</button>
         </div>
     </div>
 </body>

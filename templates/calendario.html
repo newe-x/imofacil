@@ -2,41 +2,87 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>Calendário de ocupação</h1>
+    <div>
+        <h1><i class="bi bi-calendar3"></i>Calendário</h1>
+        <p class="page-descricao">Veja os dias em que seus imóveis estão ocupados. Toque num dia colorido para ver o contrato.</p>
+    </div>
 </div>
 
-<div class="calendar-nav">
-    <a href="{{ url_for('calendario', ano=ano_mes_anterior, mes=mes_anterior) }}" class="link-action">&lt; Mês anterior</a>
-    <span class="calendar-month-label">{{ nome_mes }} de {{ ano }}</span>
-    <a href="{{ url_for('calendario', ano=ano_mes_seguinte, mes=mes_seguinte) }}" class="link-action">Próximo mês &gt;</a>
-</div>
-
-<div class="calendar-grid">
-    <div class="calendar-weekday">Dom</div>
-    <div class="calendar-weekday">Seg</div>
-    <div class="calendar-weekday">Ter</div>
-    <div class="calendar-weekday">Qua</div>
-    <div class="calendar-weekday">Qui</div>
-    <div class="calendar-weekday">Sex</div>
-    <div class="calendar-weekday">Sáb</div>
-
-    {% for semana in semanas %}
-        {% for dia in semana %}
-            {% if dia == 0 %}
-            <div class="calendar-day calendar-day-vazio"></div>
-            {% else %}
-            <div class="calendar-day{% if dia in ocupacoes %} calendar-day-ocupado{% endif %}{% if ano == hoje.year and mes == hoje.month and dia == hoje.day %} calendar-day-hoje{% endif %}">
-                <span class="calendar-day-number">{{ dia }}</span>
-                {% if dia in ocupacoes %}
-                <div class="calendar-tooltip">
-                    {% for ocupacao in ocupacoes[dia] %}
-                    <p>{{ ocupacao.imovel }}: {{ ocupacao.locatario }}</p>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
+<section class="calendar-card">
+    <div class="calendar-nav">
+        <a href="{{ url_for('calendario', ano=ano_mes_anterior, mes=mes_anterior) }}" class="calendar-nav-btn" aria-label="Mês anterior"><i class="bi bi-chevron-left"></i></a>
+        <div class="calendar-month-label">
+            <strong>{{ nome_mes }} {{ ano }}</strong>
+            {% if not mes_atual %}
+            <a href="{{ url_for('calendario') }}" class="calendar-hoje-link">Voltar para hoje</a>
             {% endif %}
+        </div>
+        <a href="{{ url_for('calendario', ano=ano_mes_seguinte, mes=mes_seguinte) }}" class="calendar-nav-btn" aria-label="Próximo mês"><i class="bi bi-chevron-right"></i></a>
+    </div>
+
+    <div class="calendar-grid">
+        {% for nome in ["D", "S", "T", "Q", "Q", "S", "S"] %}
+        <div class="calendar-weekday">{{ nome }}</div>
         {% endfor %}
-    {% endfor %}
-</div>
+
+        {% for semana in semanas %}
+            {% for dia in semana %}
+                {% if dia == 0 %}
+                <div class="calendar-day calendar-day-vazio"></div>
+                {% else %}
+                {% set ocupacoes_dia = ocupacoes.get(dia, []) %}
+                {% set classes = "calendar-day" %}
+                {% if ocupacoes_dia | selectattr('assinado') | list %}{% set classes = classes ~ " calendar-day-ocupado" %}
+                {% elif ocupacoes_dia %}{% set classes = classes ~ " calendar-day-pendente" %}{% endif %}
+                {% if mes_atual and dia == hoje.day %}{% set classes = classes ~ " calendar-day-hoje" %}{% endif %}
+                {% if ocupacoes_dia %}
+                <button type="button" class="{{ classes }}" data-dia="{{ dia }}"
+                    data-contratos="{{ ocupacoes_dia | map(attribute='id') | join(',') }}"
+                    title="{% for o in ocupacoes_dia %}{{ o.imovel }}: {{ o.locatario }}{% if not o.assinado %} (aguardando sua assinatura){% endif %}{% if not loop.last %}&#10;{% endif %}{% endfor %}">
+                    {{ dia }}
+                </button>
+                {% else %}
+                <div class="{{ classes }}">{{ dia }}</div>
+                {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+    <div class="calendar-legend">
+        <span><i class="calendar-legend-cor calendar-legend-assinado"></i>Ocupado</span>
+        <span><i class="calendar-legend-cor calendar-legend-preenchido"></i>Falta sua assinatura</span>
+        <span><i class="calendar-legend-cor calendar-legend-hoje"></i>Hoje</span>
+    </div>
+</section>
+
+<section class="calendar-card calendar-lista">
+    <div class="calendar-lista-titulo">
+        <h2 id="calendarListaTitulo">Contratos em {{ nome_mes | lower }}</h2>
+        <button type="button" class="link-action hidden" id="calendarMostrarTodos">Ver todos</button>
+    </div>
+
+    {% if contratos_do_mes %}
+    <ul>
+        {% for contrato in contratos_do_mes %}
+        <li data-contrato-id="{{ contrato.id }}">
+            <a href="{{ url_for('visualizar_contrato', contrato_id=contrato.id) }}" class="calendar-item calendar-item-{{ contrato.status }}">
+                <span class="calendar-item-info">
+                    <strong>{{ contrato.imovel.nome }}</strong>
+                    <span>{{ contrato.nome_locatario }}</span>
+                    <small>{{ contrato.data_inicio.strftime("%d/%m/%Y") }} a {{ contrato.data_termino.strftime("%d/%m/%Y") }}</small>
+                </span>
+                {% if contrato.status == "assinado" %}
+                <span class="status-badge status-preenchido">Assinado</span>
+                {% else %}
+                <span class="status-badge status-pendente">Assinar</span>
+                {% endif %}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="calendar-vazio">Nenhum imóvel ocupado neste mês.</p>
+    {% endif %}
+</section>
 {% endblock %}

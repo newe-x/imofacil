@@ -1,10 +1,23 @@
 import secrets
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+
+
+def agora_utc():
+    # SQLite guarda datetime "naive" (sem tzinfo): gravamos sempre em UTC sem
+    # tzinfo e convertemos para o horário de Brasília só na exibição.
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def formatar_moeda(valor):
+    # 1234.5 -> "R$ 1.234,50"
+    texto = f"{Decimal(valor):,.2f}".replace(",", "_").replace(".", ",").replace("_", ".")
+    return f"R$ {texto}"
 
 
 class Locador(UserMixin, db.Model):
@@ -30,6 +43,9 @@ class Locador(UserMixin, db.Model):
     estado_civil = db.Column(db.String(50))
     profissao = db.Column(db.String(120))
     perfil_completo = db.Column(db.Boolean, nullable=False, default=False)
+    # Senha definida pelo admin (conta nova ou redefinição): o usuário é
+    # obrigado a trocar no próximo login.
+    senha_temporaria = db.Column(db.Boolean, nullable=False, default=False, server_default="0")
 
     imoveis = db.relationship("Imovel", backref="locador", lazy=True)
 
@@ -45,7 +61,7 @@ class Imovel(db.Model):
     cidade = db.Column(db.String(120), nullable=False)
     estado = db.Column(db.String(2), nullable=False)
     cep = db.Column(db.String(9), nullable=False)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=agora_utc)
 
     contratos = db.relationship("Contrato", backref="imovel", lazy=True)
 
@@ -58,19 +74,17 @@ class Contrato(db.Model):
     token = db.Column(db.String(32), unique=True, nullable=False, default=lambda: secrets.token_urlsafe(12))
     # "pendente" | "preenchido" | "assinado" | "cancelado"
     status = db.Column(db.String(20), nullable=False, default="pendente")
-    # SQLite guarda datetime "naive" (sem tzinfo), então geramos/comparamos
-    # sempre em UTC sem tzinfo pra evitar erro de comparação naive x aware.
     token_expires_at = db.Column(
         db.DateTime,
         nullable=False,
-        default=lambda: datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=24),
+        default=lambda: agora_utc() + timedelta(hours=24),
     )
 
     # Termos definidos pelo locador ao gerar o contrato.
     duracao_contrato = db.Column(db.String(50), nullable=False)
     data_inicio = db.Column(db.Date, nullable=False)
     data_termino = db.Column(db.Date, nullable=False)
-    valor = db.Column(db.String(50), nullable=False)
+    valor = db.Column(db.Numeric(10, 2), nullable=False)
     forma_pagamento = db.Column(db.String(120), nullable=False)
 
     # Dados do locatário, preenchidos via o link público.
@@ -84,20 +98,23 @@ class Contrato(db.Model):
     estado_locatario = db.Column(db.String(50))
     profissao_locatario = db.Column(db.String(120))
 
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=agora_utc)
     filled_at = db.Column(db.DateTime)
+    # sha256 do .docx final (com o bloco de assinaturas), gravado quando o
+    # locador assina — base da verificação de integridade do arquivo.
+    hash_final = db.Column(db.String(64))
 
     @property
     def valor_formatado(self):
-        # O locador pode digitar "1800" ou "R$ 1.800,00"; o contrato sempre
-        # mostra com "R$" uma única vez.
-        valor = self.valor.strip()
-        return valor if valor.upper().startswith("R$") else f"R$ {valor}"
+        return formatar_moeda(self.valor)
 
     @property
     def link_expirado(self):
-        agora = datetime.now(timezone.utc).replace(tzinfo=None)
-        return self.status == "pendente" and self.token_expires_at < agora
+        return self.status == "pendente" and self.token_expires_at < agora_utc()
+
+    @property
+    def ultima_assinatura_em(self):
+        return max((a.assinado_em for a in self.assinaturas), default=None)
 
 
 class LoginAttempt(db.Model):
@@ -107,7 +124,7 @@ class LoginAttempt(db.Model):
     username = db.Column(db.String(80), nullable=False)
     ip = db.Column(db.String(45), nullable=False)
     sucesso = db.Column(db.Boolean, nullable=False)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    created_at = db.Column(db.DateTime, default=agora_utc)
 
 
 class Assinatura(db.Model):
@@ -124,6 +141,6 @@ class Assinatura(db.Model):
     # sha256 do .docx gerado no momento da assinatura, prova de que o
     # signatário concordou com aquele conteúdo específico.
     hash_documento = db.Column(db.String(64), nullable=False)
-    assinado_em = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    assinado_em = db.Column(db.DateTime, default=agora_utc)
 
     contrato = db.relationship("Contrato", backref="assinaturas")

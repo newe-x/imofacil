@@ -2,7 +2,10 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>Tentativas de login malsucedidas</h1>
+    <div>
+        <h1>Tentativas de login malsucedidas</h1>
+        <p class="page-descricao">As 50 falhas de login mais recentes, para identificar acessos suspeitos.</p>
+    </div>
 </div>
 
 {% if tentativas %}
@@ -20,7 +23,7 @@
         <tr>
             <td>{{ tentativa.username }}</td>
             <td>{{ tentativa.ip }}</td>
-            <td>{{ tentativa.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
+            <td>{{ tentativa.created_at|data_hora }}</td>
         </tr>
         {% endfor %}
     </tbody>

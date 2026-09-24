@@ -4,6 +4,8 @@
 <form action="{{ url_for('editar_imovel', imovel_id=imovel.id) if imovel else url_for('novo_imovel') }}"
     method="POST" class="form-card">
     <h1><i class="bi bi-{{ 'pencil-fill' if imovel else 'house-add-fill' }}"></i>{{ "Editar imóvel" if imovel else "Novo imóvel" }}</h1>
+    <p class="page-descricao">{{ "As alterações valem para os próximos contratos; contratos já preenchidos não mudam." if imovel
+        else "Esses dados aparecem no contrato como o endereço do imóvel alugado." }}</p>
     {% if error %}<p class="form-error">{{ error }}</p>{% endif %}
 
     <div class="input-box">

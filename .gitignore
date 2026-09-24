@@ -6,3 +6,4 @@ instance/
 contratos/gerados/
 .vscode/
 .claude/
+backups/

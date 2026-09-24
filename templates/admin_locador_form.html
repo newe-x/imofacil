@@ -3,6 +3,7 @@
 {% block content %}
 <form action="{{ url_for('admin_novo_locador') }}" method="POST" class="form-card">
     <h1>Novo locador</h1>
+    <p class="page-descricao">A senha é temporária: o locador cria uma nova no primeiro acesso.</p>
     {% if error %}<p class="form-error">{{ error }}</p>{% endif %}
 
     <div class="input-box">

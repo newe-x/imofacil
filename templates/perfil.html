@@ -2,7 +2,10 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>{{ "Bem-vindo(a) à Imofácil" if primeiro_acesso else "Meu perfil" }}</h1>
+    <div>
+        <h1>{{ "Bem-vindo(a) à Imofácil" if primeiro_acesso else "Meu perfil" }}</h1>
+        <p class="page-descricao">Seus dados aparecem como LOCADOR em todos os contratos que você gerar.</p>
+    </div>
 </div>
 
 <div class="form-card">

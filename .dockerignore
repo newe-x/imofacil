@@ -7,3 +7,5 @@ contratos/gerados/
 .gitignore
 .vscode/
 .claude/
+.env
+backups/

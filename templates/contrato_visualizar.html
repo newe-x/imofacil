@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-file-earmark-text-fill"></i>{{ contrato.imovel.nome }}</h1>
+        <p class="page-descricao">
+            {{ contrato.nome_locatario }} —
+            {{ contrato.data_inicio.strftime("%d/%m/%Y") }} a {{ contrato.data_termino.strftime("%d/%m/%Y") }} —
+            {{ contrato.valor_formatado }}
+        </p>
+    </div>
+    <div class="dashboard-actions">
+        <a href="{{ url_for('contratos', status='assinado') if contrato.status == 'assinado' else url_for('contratos') }}"
+            class="button-link button-link-secundario"><i class="bi bi-arrow-left"></i>Voltar</a>
+        {% if contrato.status == "preenchido" %}
+        <a href="{{ url_for('assinar_contrato', contrato_id=contrato.id) }}" class="button-link"><i class="bi bi-pen-fill"></i>Assinar</a>
+        {% endif %}
+        <a href="{{ url_for('baixar_contrato_locador', contrato_id=contrato.id) }}" class="button-link"><i class="bi bi-file-earmark-pdf-fill"></i>Baixar PDF</a>
+    </div>
+</div>
+
+<section class="form-card contrato-visualizar">
+    {% if integridade == "integro" %}
+    <p class="integridade integridade-ok"><i class="bi bi-shield-check"></i>
+        Arquivo íntegro: idêntico ao registrado na {{ "assinatura final" if contrato.status == "assinado" else "assinatura do locatário" }}.</p>
+    {% elif integridade == "alterado" %}
+    <p class="integridade integridade-alerta"><i class="bi bi-shield-exclamation"></i>
+        Atenção: o arquivo foi modificado depois da {{ "assinatura final" if contrato.status == "assinado" else "assinatura do locatário" }}
+        (o conteúdo não confere com o registro).</p>
+    {% else %}
+    <p class="integridade"><i class="bi bi-shield"></i>
+        Verificação de integridade indisponível para este contrato (gerado antes do registro do hash final).</p>
+    {% endif %}
+
+    <p class="section-title" style="margin-top: 0">Assinaturas</p>
+    <ul class="resumo-lista">
+        {% for assinatura in assinaturas %}
+        <li><i class="bi bi-patch-check-fill"></i><span>
+            <strong>{{ "Locatário" if assinatura.papel == "locatario" else "Locador" }}:</strong>
+            {{ assinatura.nome }} — {{ assinatura.assinado_em|data_hora }}, IP {{ assinatura.ip }}
+        </span></li>
+        {% endfor %}
+        {% if contrato.status == "preenchido" %}
+        <li><i class="bi bi-hourglass-split"></i><span><strong>Locador:</strong> aguardando sua assinatura</span></li>
+        {% endif %}
+    </ul>
+
+    <p class="section-title">Contrato</p>
+    <div class="contrato-texto">
+        {% for texto in paragrafos %}
+        <p{% if loop.first %} class="contrato-titulo"{% elif texto.startswith('CLÁUSULA') %} class="contrato-clausula"{% endif %}>{{ texto }}</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

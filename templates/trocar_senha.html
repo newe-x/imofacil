@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ "Defina sua nova senha" if obrigatoria else "Alterar senha" }}</h1>
+        <p class="page-descricao">Use pelo menos 6 caracteres e não repita a senha atual.</p>
+    </div>
+</div>
+
+<div class="form-card">
+    {% if obrigatoria %}
+    <p class="form-subtitle">Você entrou com uma senha temporária. Escolha uma senha só sua para continuar.</p>
+    {% endif %}
+    {% if error %}
+    <p class="form-error">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <div class="input-box">
+            <input type="password" name="nova_senha" placeholder="Nova senha" required minlength="6" autocomplete="new-password"><i class="bi bi-eye-fill toggle-password"></i>
+        </div>
+        <div class="input-box">
+            <input type="password" name="confirmar_senha" placeholder="Confirme a nova senha" required minlength="6" autocomplete="new-password"><i class="bi bi-eye-fill toggle-password"></i>
+        </div>
+
+        <div class="button">
+            <input type="submit" value="Salvar">
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -51,9 +51,33 @@ document.querySelectorAll(".toggle-password").forEach(function (icon) {
   });
 });
 
+// navigator.clipboard só existe em HTTPS/localhost; acessando pelo IP da
+// rede (http://192.168...) ou se o navegador negar a permissão, caímos no
+// execCommand com um textarea temporário.
+function copiarTexto(texto) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(texto).catch(function () {
+      return copiarTextoLegado(texto);
+    });
+  }
+  return copiarTextoLegado(texto);
+}
+
+function copiarTextoLegado(texto) {
+  const area = document.createElement("textarea");
+  area.value = texto;
+  area.style.position = "fixed";
+  area.style.opacity = "0";
+  document.body.appendChild(area);
+  area.select();
+  const ok = document.execCommand("copy");
+  document.body.removeChild(area);
+  return ok ? Promise.resolve() : Promise.reject();
+}
+
 document.querySelectorAll(".copy-link-btn").forEach(function (btn) {
   btn.addEventListener("click", function () {
-    navigator.clipboard.writeText(btn.dataset.copy).then(function () {
+    copiarTexto(btn.dataset.copy).then(function () {
       const toast = document.getElementById("copyToast");
       toast.classList.remove("hidden");
       clearTimeout(toast.hideTimeout);
@@ -63,6 +87,110 @@ document.querySelectorAll(".copy-link-btn").forEach(function (btn) {
     });
   });
 });
+
+const linkModal = document.getElementById("linkModal");
+
+if (linkModal) {
+  linkModal.querySelector("[data-fechar-modal]").addEventListener("click", function () {
+    linkModal.classList.add("hidden");
+  });
+  linkModal.addEventListener("click", function (event) {
+    if (event.target === linkModal) {
+      linkModal.classList.add("hidden");
+    }
+  });
+  // Clicar no campo seleciona o link inteiro, pra quem preferir copiar na mão.
+  linkModal.querySelector(".modal-link").addEventListener("focus", function (event) {
+    event.target.select();
+  });
+}
+
+// Confirmação de ações destrutivas: formulários com data-confirmar="texto"
+// abrem o #confirmModal (base.html) antes de enviar.
+const confirmModal = document.getElementById("confirmModal");
+
+if (confirmModal) {
+  let formPendente = null;
+  const fecharConfirmacao = function () {
+    confirmModal.classList.add("hidden");
+    formPendente = null;
+  };
+
+  document.querySelectorAll("form[data-confirmar]").forEach(function (form) {
+    form.addEventListener("submit", function (event) {
+      if (form.dataset.confirmado) return;
+      event.preventDefault();
+      formPendente = form;
+      document.getElementById("confirmModalTexto").textContent = form.dataset.confirmar;
+      confirmModal.querySelector("[data-confirmar-sim]").textContent = form.dataset.confirmarBotao || "Confirmar";
+      confirmModal.classList.remove("hidden");
+      confirmModal.querySelector("[data-confirmar-nao]").focus();
+    });
+  });
+
+  confirmModal.querySelector("[data-confirmar-sim]").addEventListener("click", function () {
+    if (!formPendente) return;
+    const form = formPendente;
+    form.dataset.confirmado = "1";
+    fecharConfirmacao();
+    form.requestSubmit();
+  });
+  confirmModal.querySelector("[data-confirmar-nao]").addEventListener("click", fecharConfirmacao);
+  confirmModal.addEventListener("click", function (event) {
+    if (event.target === confirmModal) fecharConfirmacao();
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && !confirmModal.classList.contains("hidden")) fecharConfirmacao();
+  });
+}
+
+document.querySelectorAll(".flash-fechar").forEach(function (botao) {
+  botao.addEventListener("click", function () {
+    botao.closest(".flash").remove();
+  });
+});
+
+// Calendário: tocar num dia ocupado mostra só os contratos daquele dia na
+// lista abaixo do calendário (no celular não existe hover/tooltip).
+const calendarLista = document.querySelector(".calendar-lista");
+
+if (calendarLista) {
+  const titulo = document.getElementById("calendarListaTitulo");
+  const tituloOriginal = titulo.textContent;
+  const mostrarTodos = document.getElementById("calendarMostrarTodos");
+  const itens = calendarLista.querySelectorAll("li[data-contrato-id]");
+
+  const limparFiltro = function () {
+    document.querySelectorAll(".calendar-day-selecionado").forEach(function (dia) {
+      dia.classList.remove("calendar-day-selecionado");
+    });
+    itens.forEach(function (item) {
+      item.classList.remove("hidden");
+    });
+    titulo.textContent = tituloOriginal;
+    mostrarTodos.classList.add("hidden");
+  };
+
+  document.querySelectorAll(".calendar-day[data-contratos]").forEach(function (dia) {
+    dia.addEventListener("click", function () {
+      if (dia.classList.contains("calendar-day-selecionado")) {
+        limparFiltro();
+        return;
+      }
+      limparFiltro();
+      const ids = dia.dataset.contratos.split(",");
+      dia.classList.add("calendar-day-selecionado");
+      itens.forEach(function (item) {
+        item.classList.toggle("hidden", !ids.includes(item.dataset.contratoId));
+      });
+      titulo.textContent = "Dia " + dia.dataset.dia;
+      mostrarTodos.classList.remove("hidden");
+      calendarLista.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  });
+
+  mostrarTodos.addEventListener("click", limparFiltro);
+}
 
 const contractModal = document.getElementById("contractModal");
 const dataForm = document.getElementById("dataForm");

@@ -3,7 +3,7 @@
 {% block content %}
 <form action="{{ url_for('novo_contrato') }}" method="POST" class="form-card">
     <h1>Gerar contrato</h1>
-    <p>Escolha o imóvel e preencha os dados do contrato. Ao enviar, um link exclusivo
+    <p class="page-descricao">Escolha o imóvel e preencha os dados do contrato. Ao enviar, um link exclusivo
         será criado para o inquilino preencher as informações dele.</p>
 
     {% if error %}<p class="form-error">{{ error }}</p>{% endif %}
@@ -31,7 +31,7 @@
         <input type="date" name="data_termino" required>
     </div>
     <div class="input-box">
-        <input type="text" name="valor" placeholder="Valor (ex: R$ 1.500,00)" required>
+        <input type="text" name="valor" placeholder="Valor mensal em R$ (ex: 1.500,00)" inputmode="decimal" required>
     </div>
     <div class="input-box">
         <input type="text" name="forma_pagamento" placeholder="Forma de pagamento" required>
@@ -49,10 +49,16 @@
 </form>
 
 {% if link %}
-<div class="form-card link-result">
-    <p>Link gerado com sucesso! Encaminhe para o inquilino:</p>
-    <p class="generated-link"><a href="{{ link }}" target="_blank">{{ link }}</a></p>
-    <button type="button" class="copy-link-btn" data-copy="{{ link }}"><i class="bi bi-clipboard"></i>Copiar link</button>
+<div id="linkModal" class="modal-overlay">
+    <div class="modal">
+        <button type="button" class="modal-close" data-fechar-modal aria-label="Fechar">&times;</button>
+        <i class="bi bi-check-circle-fill modal-icon"></i>
+        <h2>Contrato criado com sucesso!</h2>
+        <p>Envie o link abaixo para o inquilino preencher os dados e assinar. Ele expira em 24h.</p>
+        <input type="text" class="modal-link" value="{{ link }}" readonly>
+        <button type="button" class="modal-button copy-link-btn" data-copy="{{ link }}"><i class="bi bi-clipboard"></i>Copiar link</button>
+        <a href="{{ url_for('contratos') }}" class="modal-link-secundario">Ver meus contratos</a>
+    </div>
 </div>
 {% endif %}
 

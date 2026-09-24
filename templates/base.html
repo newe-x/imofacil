@@ -33,8 +33,34 @@
         </section>
     </header>
     <main class="container container-wide">
+        {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% if mensagens %}
+        <div class="flash-lista">
+            {% for categoria, mensagem in mensagens %}
+            <div class="flash flash-{{ categoria }}" role="status">
+                <i class="bi bi-{{ 'exclamation-circle-fill' if categoria == 'erro' else 'check-circle-fill' }}"></i>
+                <span>{{ mensagem }}</span>
+                <button type="button" class="flash-fechar" aria-label="Fechar">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
+
+    {# Confirmação para formulários com data-confirmar="..." (no lugar do confirm() do navegador) #}
+    <div id="confirmModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitulo">
+        <div class="modal">
+            <i class="bi bi-exclamation-triangle-fill modal-icon modal-icon-alerta"></i>
+            <h2 id="confirmModalTitulo">Tem certeza?</h2>
+            <p id="confirmModalTexto"></p>
+            <div class="modal-acoes">
+                <button type="button" class="modal-button modal-button-secundario" data-confirmar-nao>Voltar</button>
+                <button type="button" class="modal-button modal-button-perigo" data-confirmar-sim>Confirmar</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

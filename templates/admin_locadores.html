@@ -2,7 +2,10 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>Locadores</h1>
+    <div>
+        <h1>Locadores</h1>
+        <p class="page-descricao">Crie contas de locador, controle quem tem acesso e redefina senhas esquecidas.</p>
+    </div>
     <a href="{{ url_for('admin_novo_locador') }}" class="button-link">Novo locador</a>
 </div>
 
@@ -28,10 +31,19 @@
                 </span>
             </td>
             <td>
-                <form action="{{ url_for('admin_alternar_acesso', locador_id=locador.id) }}" method="POST">
-                    <button type="submit" class="link-action">
+                <form action="{{ url_for('admin_alternar_acesso', locador_id=locador.id) }}" method="POST"
+                    style="display:inline"
+                    {% if locador.ativo %}data-confirmar="&quot;{{ locador.username }}&quot; não vai mais conseguir entrar até ser reativado."
+                    data-confirmar-botao="Desativar"{% endif %}>
+                    <button type="submit" class="link-action{{ ' link-action-danger' if locador.ativo else '' }}">
                         {{ "Desativar" if locador.ativo else "Ativar" }}
                     </button>
+                </form>
+                <form action="{{ url_for('admin_redefinir_senha', locador_id=locador.id) }}" method="POST"
+                    style="display:inline"
+                    data-confirmar="A senha atual de &quot;{{ locador.username }}&quot; para de funcionar e uma senha temporária será gerada."
+                    data-confirmar-botao="Redefinir senha">
+                    <button type="submit" class="link-action"><i class="bi bi-key-fill"></i>Redefinir senha</button>
                 </form>
             </td>
         </tr>
