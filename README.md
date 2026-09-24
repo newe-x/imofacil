@@ -25,6 +25,9 @@ por link único e coletarem os dados e a assinatura eletrônica do locatário
   de reenvio.
 - Preenchimento dos dados do locatário via link público, com validação de
   duração mínima do contrato (> 1 dia).
+- **Leitura antes de assinar**: o link público mostra um resumo em linguagem
+  simples e o contrato completo, com os dados do locatário preenchidos
+  enquanto ele digita; o aceite só é liberado após rolar o texto até o fim.
 - **Assinatura eletrônica em duas etapas**: o locatário assina ao aceitar
   os termos no preenchimento; o locador revisa e assina depois. Cada
   assinatura registra nome, documento, IP, user-agent e o hash SHA-256 do

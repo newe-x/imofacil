@@ -15,7 +15,7 @@
 
     <p class="field-label" style="margin-top: 1rem">Termos</p>
     <p>{{ contrato.duracao_contrato }}, de {{ contrato.data_inicio.strftime("%d/%m/%Y") }} a
-        {{ contrato.data_termino.strftime("%d/%m/%Y") }} — {{ contrato.valor }}
+        {{ contrato.data_termino.strftime("%d/%m/%Y") }} — {{ contrato.valor_formatado }}
         ({{ contrato.forma_pagamento }})</p>
 
     {% if error %}

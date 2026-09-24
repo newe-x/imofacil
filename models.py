@@ -88,6 +88,13 @@ class Contrato(db.Model):
     filled_at = db.Column(db.DateTime)
 
     @property
+    def valor_formatado(self):
+        # O locador pode digitar "1800" ou "R$ 1.800,00"; o contrato sempre
+        # mostra com "R$" uma única vez.
+        valor = self.valor.strip()
+        return valor if valor.upper().startswith("R$") else f"R$ {valor}"
+
+    @property
     def link_expirado(self):
         agora = datetime.now(timezone.utc).replace(tzinfo=None)
         return self.status == "pendente" and self.token_expires_at < agora

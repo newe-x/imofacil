@@ -68,6 +68,41 @@ const contractModal = document.getElementById("contractModal");
 const dataForm = document.getElementById("dataForm");
 
 if (dataForm) {
+  // Espelha no texto do contrato o que o locatário digita, para ele ler
+  // exatamente o que vai assinar.
+  dataForm.querySelectorAll("input[name]").forEach(function (input) {
+    const spans = document.querySelectorAll(
+      '.campo-locatario[data-campo="' + input.name + '"]'
+    );
+    function atualizar() {
+      const valor = input.value.trim();
+      spans.forEach(function (span) {
+        span.textContent = valor || "[" + input.placeholder + "]";
+        span.classList.toggle("vazio", !valor);
+      });
+    }
+    input.addEventListener("input", atualizar);
+    atualizar();
+  });
+
+  // O aceite só é liberado depois que o locatário rola o contrato até o fim.
+  const contratoTexto = document.getElementById("contratoTexto");
+  const termos = document.getElementById("terms");
+  function liberarAceite() {
+    const noFim =
+      contratoTexto.scrollTop + contratoTexto.clientHeight >=
+      contratoTexto.scrollHeight - 10;
+    if (noFim) {
+      termos.disabled = false;
+      document.getElementById("leituraAviso").classList.add("hidden");
+      contratoTexto.removeEventListener("scroll", liberarAceite);
+    }
+  }
+  if (contratoTexto && termos) {
+    contratoTexto.addEventListener("scroll", liberarAceite);
+    liberarAceite();
+  }
+
   dataForm.addEventListener("submit", function (event) {
     event.preventDefault();
     const formData = new FormData(event.target);

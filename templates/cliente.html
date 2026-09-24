@@ -22,7 +22,7 @@
             </a>
         </section>
     </header>
-    <main class="container">
+    <main class="container{% if estado == 'valido' %} container-leitura{% endif %}">
         {% if estado == "assinado" %}
         <div class="form-card">
             <h1>Contrato já assinado</h1>
@@ -46,6 +46,46 @@
             <p>Este link não é mais válido. Peça ao locador para reenviar um novo link.</p>
         </div>
         {% else %}
+        {% set imovel = contrato.imovel %}
+        <section class="form-card resumo-contrato">
+            <h1>Seu contrato em resumo</h1>
+            <p>Confira os pontos principais antes de ler o contrato completo.</p>
+            <ul class="resumo-lista">
+                <li><i class="bi bi-house-door-fill"></i><span><strong>Imóvel:</strong>
+                    {{ imovel.endereco }}, {{ imovel.bairro }}, {{ imovel.cidade }}/{{ imovel.estado }} — CEP {{ imovel.cep }}</span></li>
+                <li><i class="bi bi-person-badge-fill"></i><span><strong>Locador:</strong>
+                    {{ imovel.locador.nome or imovel.locador.username }}</span></li>
+                <li><i class="bi bi-calendar-range-fill"></i><span><strong>Período:</strong>
+                    de {{ contrato.data_inicio.strftime('%d/%m/%Y') }} a {{ contrato.data_termino.strftime('%d/%m/%Y') }}
+                    ({{ contrato.duracao_contrato }})</span></li>
+                <li><i class="bi bi-cash-coin"></i><span><strong>Valor:</strong>
+                    {{ contrato.valor_formatado }}, pago por {{ contrato.forma_pagamento }}</span></li>
+            </ul>
+            {# Resumo das cláusulas fixas do template .docx — manter em sincronia se o modelo mudar. #}
+            <h2 class="section-title">Você se compromete a</h2>
+            <ul class="resumo-lista">
+                <li><i class="bi bi-check2"></i><span>Usar o imóvel só para moradia, sem atividade comercial.</span></li>
+                <li><i class="bi bi-check2"></i><span>Cuidar do imóvel e dos móveis, respondendo por danos que causar.</span></li>
+                <li><i class="bi bi-check2"></i><span>Não sublocar nem emprestar o imóvel sem autorização por escrito.</span></li>
+                <li><i class="bi bi-check2"></i><span>Devolver o imóvel nas mesmas condições em que recebeu.</span></li>
+            </ul>
+        </section>
+
+        <section class="form-card">
+            <h1>Contrato completo</h1>
+            <p>Os campos em destaque são preenchidos com os seus dados abaixo.</p>
+            <div class="contrato-texto" id="contratoTexto">
+                {% for trechos in paragrafos %}
+                {% set texto_paragrafo = trechos | map(attribute=0) | select | join %}
+                <p{% if loop.first %} class="contrato-titulo"{% elif texto_paragrafo.startswith('CLÁUSULA') %} class="contrato-clausula"{% endif %}>
+                    {%- for texto, campo in trechos -%}
+                    {%- if campo -%}<span class="campo-locatario" data-campo="{{ campo }}"></span>{%- else -%}{{ texto }}{%- endif -%}
+                    {%- endfor -%}
+                </p>
+                {% endfor %}
+            </div>
+        </section>
+
         <form id="dataForm" action="{{ url_for('enviar_contrato', token=token) }}" method="POST"
             data-download-url="{{ url_for('download_contrato', token=token) }}">
             <h1>Preencha seus dados</h1>
@@ -83,9 +123,10 @@
             </div>
 
             <div class="checkbox">
-                <input type="checkbox" id="terms" name="terms" required>
-                <label for="terms">Aceito os termos e condições</label>
+                <input type="checkbox" id="terms" name="terms" required disabled>
+                <label for="terms">Li o contrato completo e aceito seus termos</label>
             </div>
+            <p class="leitura-aviso" id="leituraAviso">Role o contrato até o fim para liberar o aceite.</p>
             <div class="button">
                 <input type="submit" value="Enviar">
             </div>

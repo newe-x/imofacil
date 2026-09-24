@@ -1,6 +1,7 @@
 import calendar as calendar_module
 import hashlib
 import os
+import re
 from datetime import date, datetime, timedelta, timezone
 from functools import wraps
 
@@ -33,9 +34,7 @@ CONTRATOS_GERADOS_DIR = f"{CONTRATOS_DIR}/gerados"
 TEMPLATE_PATH = f"{CONTRATOS_DIR}/Contrato_de_Locacao_Residencial.docx"
 
 # Mapeia o nome do campo usado internamente para o placeholder real dentro
-# do template .docx (alguns usam acentos, outros não). Campos de foro/data
-# de assinatura ({{cidade_locador}}/{{uf_locador}} como comarca,
-# {{dia_assinatura}}/{{mes}}/{{ano}}) ficam fora por ora.
+# do template .docx (alguns usam acentos, outros não).
 FIELD_MAP = {
     # Locatário
     "nome_locatario": "nome_locatario",
@@ -69,7 +68,16 @@ FIELD_MAP = {
     "data_termino": "data_termino",
     "valor": "valor",
     "forma_pagamento": "forma_pagamento",
+    # Data em que o contrato é gerado (preenchimento pelo locatário)
+    "dia_assinatura": "dia_assinatura",
+    "mes": "mes",
+    "ano": "ano",
 }
+
+MESES = [
+    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+]
 
 LOCATARIO_FIELDS = [
     "nome_locatario",
@@ -558,7 +566,16 @@ def contrato_publico(token):
     else:
         estado = "valido"
 
-    return render_template("cliente.html", token=token, estado=estado)
+    if estado != "valido":
+        return render_template("cliente.html", token=token, estado=estado)
+
+    return render_template(
+        "cliente.html",
+        token=token,
+        estado=estado,
+        contrato=contrato,
+        paragrafos=previa_contrato(contrato),
+    )
 
 
 @app.route("/contrato/<token>/enviar", methods=["POST"])
@@ -692,7 +709,7 @@ def anexar_bloco_assinaturas(contrato):
     doc.save(caminho)
 
 
-def gerarContratos(contrato, dados_locatario):
+def dados_contrato(contrato, dados_locatario):
     imovel = contrato.imovel
     locador = imovel.locador
 
@@ -714,8 +731,47 @@ def gerarContratos(contrato, dados_locatario):
     dados["duracao_contrato"] = contrato.duracao_contrato
     dados["data_inicio"] = contrato.data_inicio.strftime("%d/%m/%Y")
     dados["data_termino"] = contrato.data_termino.strftime("%d/%m/%Y")
-    dados["valor"] = contrato.valor
+    dados["valor"] = contrato.valor_formatado
     dados["forma_pagamento"] = contrato.forma_pagamento
+    hoje = date.today()
+    dados["dia_assinatura"] = str(hoje.day)
+    dados["mes"] = MESES[hoje.month - 1]
+    dados["ano"] = str(hoje.year)
+    return dados
+
+
+def previa_contrato(contrato):
+    # Texto do template com tudo que já se sabe (locador, imóvel, termos)
+    # preenchido, para o locatário ler antes de assinar. Cada parágrafo vira
+    # uma lista de trechos: (texto, None) ou (None, campo_do_locatario) —
+    # esses campos são preenchidos na tela conforme ele digita.
+    dados = dados_contrato(contrato, {})
+    campo_por_placeholder = {placeholder: campo for campo, placeholder in FIELD_MAP.items()}
+
+    paragrafos = []
+    for paragraph in Document(TEMPLATE_PATH).paragraphs:
+        if not paragraph.text.strip():
+            continue
+        trechos = []
+        for i, parte in enumerate(re.split(r"\{\{(.+?)\}\}", paragraph.text)):
+            if i % 2 == 0:
+                trechos.append((parte, None))
+                continue
+            campo = campo_por_placeholder.get(parte)
+            if campo in LOCATARIO_FIELDS:
+                trechos.append((None, campo))
+            elif campo:
+                trechos.append((dados[campo] or "", None))
+            else:
+                # Placeholder que o gerarContratos também não preenche — mostramos
+                # igual ao que vai sair no .docx.
+                trechos.append(("{{" + parte + "}}", None))
+        paragrafos.append(trechos)
+    return paragrafos
+
+
+def gerarContratos(contrato, dados_locatario):
+    dados = dados_contrato(contrato, dados_locatario)
 
     doc = Document(TEMPLATE_PATH)
     for paragraph in doc.paragraphs:
