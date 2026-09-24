@@ -56,7 +56,7 @@ class Contrato(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     imovel_id = db.Column(db.Integer, db.ForeignKey("imoveis.id"), nullable=False)
     token = db.Column(db.String(32), unique=True, nullable=False, default=lambda: secrets.token_urlsafe(12))
-    # "pendente" | "preenchido" | "cancelado"
+    # "pendente" | "preenchido" | "assinado" | "cancelado"
     status = db.Column(db.String(20), nullable=False, default="pendente")
     # SQLite guarda datetime "naive" (sem tzinfo), então geramos/comparamos
     # sempre em UTC sem tzinfo pra evitar erro de comparação naive x aware.
